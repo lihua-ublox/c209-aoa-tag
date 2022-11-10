@@ -276,6 +276,12 @@ static void handleCommand(struct k_work *work)
             validCommand = false;
             sendString(ERROR_STR);
         }
+    } else if (strncmp("AT+TXPWR?", atBuf, 9) == 0 && commandLen == 9) {
+        int8_t pwr;
+        storageGetTxPower(&pwr);
+        sprintf(outBuf, "\r\n+TXPWR:%d", pwr);
+        sendString(outBuf);
+        sendString(OK_STR);
     } else {
         validCommand = false;
         sendString(ERROR_STR);
