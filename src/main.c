@@ -73,7 +73,7 @@ static struct bt_nus_cb nus_cb = {
 #endif
 
 static bool isAdvRunning = true;
-static uint16_t advIntervals[] = {50, 100, 250, 1000};
+static uint16_t advIntervals[] = {1000};
 static uint8_t advIntervalIndex = 0;
 static char *pDefaultGroupNamespace = "NINA-B4TAG";
 
@@ -140,10 +140,9 @@ static void blink(void)
     uint8_t randDelayMs;
 #endif
 #ifdef CONFIG_SEND_SENSOR_DATA_IN_PER_ADV_DATA
-#define NUM_SENSOR_DATA 6
-    struct sensor_value temp, press, humidity;
+#define NUM_SENSOR_DATA 180
     struct bt_data adData;
-    int32_t sensorData[NUM_SENSOR_DATA];
+    uint8_t sensorData[NUM_SENSOR_DATA];
 #endif
 
     while (1) {
@@ -169,18 +168,18 @@ static void blink(void)
 #endif
 #ifdef CONFIG_SEND_SENSOR_DATA_IN_PER_ADV_DATA
         if (isAdvRunning) {
-            if (sensorsGetBme280Data(&temp, &press, &humidity)) {
-                sensorData[0] = temp.val1;
-                sensorData[1] = temp.val2;
-                sensorData[2] = press.val1;
-                sensorData[3] = press.val2;
-                sensorData[4] = humidity.val1;
-                sensorData[5] = humidity.val2;
+            //if (sensorsGetBme280Data(&temp, &press, &humidity)) {
+            //    sensorData[0] = temp.val1;
+            //    sensorData[1] = temp.val2;
+            //    sensorData[2] = press.val1;
+            //    sensorData[3] = press.val2;
+            //    sensorData[4] = humidity.val1;
+            //    sensorData[5] = humidity.val2;
                 adData.type = BT_DATA_MANUFACTURER_DATA;
                 adData.data = (uint8_t *)sensorData;
-                adData.data_len = sizeof(int32_t) * NUM_SENSOR_DATA;
+                adData.data_len = NUM_SENSOR_DATA;
                 btAdvSetPerAdvData(&adData, 1);
-            }
+            //}
         }
 #endif
         k_msleep(LOOP_SLEEP_INTERVAL);
@@ -197,7 +196,7 @@ static void btReadyCb(int err)
 
     storageGetTxPower(&txPower);
     LOG_INF("Setting TxPower: %d", txPower);
-    setTxPower(BT_HCI_VS_LL_HANDLE_TYPE_ADV, 0, txPower);
+    setTxPower(BT_HCI_VS_LL_HANDLE_TYPE_ADV, 0, 0);
 
     btAdvInit(advIntervals[advIntervalIndex], advIntervals[advIntervalIndex], pDefaultGroupNamespace,
               uuid, txPower);
